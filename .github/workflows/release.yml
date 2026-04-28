@@ -56,7 +56,7 @@ jobs:
         run: npm run tauri:android:init
 
       - name: Build and publish APK
-        uses: tauri-apps/tauri-action@v1
+        uses: tauri-apps/tauri-action@v0.6.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ANDROID_HOME: ${{ env.ANDROID_HOME }}
