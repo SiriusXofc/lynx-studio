@@ -7,9 +7,9 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Release tag, for example v0.1.0'
+        description: 'Release tag, for example v0.1.1'
         required: true
-        default: 'v0.1.0'
+        default: 'v0.1.1'
 
 permissions:
   contents: write
@@ -57,17 +57,44 @@ jobs:
       - name: Initialize Android project
         run: npm run tauri:android:init
 
+      - name: Apply Android identity
+        run: node scripts/patch-android-identity.mjs
+
+      - name: Prepare Android signing
+        env:
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_BASE64: ${{ secrets.ANDROID_KEY_BASE64 }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -z "$ANDROID_KEY_ALIAS" ] || [ -z "$ANDROID_KEY_BASE64" ] || [ -z "$ANDROID_KEY_PASSWORD" ]; then
+            echo "Android signing secrets are missing."
+            exit 1
+          fi
+
+          cd src-tauri/gen/android
+          echo "keyAlias=$ANDROID_KEY_ALIAS" > keystore.properties
+          echo "password=$ANDROID_KEY_PASSWORD" >> keystore.properties
+          echo "$ANDROID_KEY_BASE64" | base64 --decode > "$RUNNER_TEMP/lynx-studio-release.jks"
+          echo "storeFile=$RUNNER_TEMP/lynx-studio-release.jks" >> keystore.properties
+
+          cd "$GITHUB_WORKSPACE"
+          node scripts/patch-android-signing.mjs
+
       - name: Build Android APK
         run: npm run tauri:android:build
 
       - name: Collect APK assets
         run: |
           mkdir -p release-assets
-          find src-tauri/gen/android -type f -name "*.apk" -print -exec cp {} release-assets/ \;
-          if [ -z "$(ls -A release-assets)" ]; then
+          APK_PATH="$(find src-tauri/gen/android -type f -name "*release*.apk" | sort | head -n 1)"
+          if [ -z "$APK_PATH" ]; then
+            APK_PATH="$(find src-tauri/gen/android -type f -name "*.apk" | sort | head -n 1)"
+          fi
+          if [ -z "$APK_PATH" ]; then
             echo "No APK files were generated."
             exit 1
           fi
+          cp "$APK_PATH" "release-assets/Lynx-Studio-${RELEASE_TAG}.apk"
           ls -lah release-assets
 
       - name: Upload workflow artifact
@@ -80,10 +107,20 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          cat > release-notes.md <<'EOF'
+          APK Android assinado e pronto para instalar.
+
+          Esta release inclui:
+          - nome publico Lynx Studio no Android;
+          - icones oficiais do app no launcher e no bundle Tauri;
+          - build mobile gerado pelo pipeline Tauri;
+          - artefato APK com nome legivel nos assets.
+          EOF
+
           if ! gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
             gh release create "$RELEASE_TAG" \
               --target "$GITHUB_SHA" \
               --title "Lynx Studio $RELEASE_TAG" \
-              --notes "Lynx Studio mobile release.\n\nBaixe o APK nos assets desta release."
+              --notes-file release-notes.md
           fi
           gh release upload "$RELEASE_TAG" release-assets/*.apk --clobber

@@ -1,6 +1,30 @@
 # Lynx Studio
 
-Lynx Studio é um editor de código mobile-first feito com Tauri v2, React, TypeScript e CodeMirror 6. A interface foi pensada para rodar em Android/iOS e também no PC em uma janela fixa no formato de celular.
+![Lynx Studio](public/lynx-studio-logo.png)
+
+Lynx Studio é um editor de código mobile-first criado para aproximar a experiência do VS Code de uma tela de celular. O objetivo do projeto é permitir que você abra, navegue, edite e entenda projetos reais em Android, iOS e também no PC usando uma janela em formato de telefone para desenvolvimento rápido.
+
+O app nasceu para resolver um problema direto: programar no celular ainda é desconfortável demais. Por isso a interface prioriza gestos, abas compactas, explorador lateral, fileira extra de símbolos, diagnósticos em tempo real e um editor leve baseado em CodeMirror 6.
+
+## Objetivo
+
+- Editar código real em telas pequenas sem depender de um desktop.
+- Rodar offline no dispositivo sempre que possível.
+- Reaproveitar ideias sólidas do VS Code, mas com uma experiência desenhada para touch.
+- Testar no PC em uma janela fixa de 390 x 844 px, igual ao formato de celular.
+- Evoluir para um ambiente mobile completo com Git, terminal, AI e diagnósticos ricos.
+
+## Recursos
+
+- Editor com CodeMirror 6, syntax highlight e line wrapping.
+- Abas de arquivos abertas, explorador lateral e busca.
+- Keyboard row com símbolos de código sempre à mão.
+- Diagnósticos em tempo real com squiggles, gutter markers e painel de Problemas.
+- Services leves inspirados no VS Code para TypeScript, JSON, CSS/SCSS e HTML.
+- Terminal integrado com xterm.js.
+- Git básico com isomorphic-git.
+- Sidebar de AI com Anthropic para sugestões e contexto do arquivo.
+- Build Tauri v2 para desktop, Android e iOS.
 
 ## Stack
 
@@ -11,8 +35,8 @@ Lynx Studio é um editor de código mobile-first feito com Tauri v2, React, Type
 - Zustand
 - `@tauri-apps/plugin-fs`, `plugin-os`, `plugin-store`
 - `isomorphic-git`
-- Anthropic API para recursos de AI
-- Language services inspirados no VSCode para diagnósticos
+- `@xterm/xterm`
+- Anthropic API
 
 ## Desenvolvimento
 
@@ -21,25 +45,16 @@ npm install
 npm run dev
 ```
 
-O preview web roda em:
+Preview web:
 
 ```text
 http://127.0.0.1:1420
 ```
 
-## Build
-
-Frontend:
+Desktop em modo phone frame:
 
 ```bash
-npm run lint
-npm run build
-```
-
-Desktop Tauri:
-
-```bash
-npm run tauri:build
+npm run tauri:dev
 ```
 
 Android:
@@ -49,25 +64,48 @@ npm run tauri:android:init
 npm run tauri:android:build
 ```
 
-## Releases
+## Qualidade
 
-O workflow `.github/workflows/release.yml` gera APK automaticamente quando uma tag `v*` é enviada para o GitHub.
+```bash
+npm run lint
+npm run build
+```
 
-Exemplo:
+## Releases Android
+
+As releases são geradas pelo GitHub Actions em `.github/workflows/release.yml`. O pipeline:
+
+- instala Node, Rust, Java e Android SDK;
+- inicializa o projeto Android do Tauri;
+- aplica o nome público `Lynx Studio`;
+- assina o APK usando secrets do GitHub;
+- publica o arquivo `Lynx-Studio-vX.Y.Z.apk` nos assets da release.
+
+Secrets necessários no GitHub:
+
+```text
+ANDROID_KEY_ALIAS
+ANDROID_KEY_BASE64
+ANDROID_KEY_PASSWORD
+```
+
+Para criar uma nova release:
 
 ```bash
 npm version patch --no-git-tag-version
-git add package.json package-lock.json src-tauri/tauri.conf.json src-tauri/Cargo.toml
-git commit -m "chore: bump version"
+git add package.json package-lock.json src-tauri/tauri.conf.json src-tauri/Cargo.toml CHANGELOG.md
+git commit -m "Release vX.Y.Z"
 npm run release:tag
 ```
 
-Depois disso, o GitHub Actions cria uma release e anexa o APK nos assets.
+## Roadmap
 
-## Observações sobre Android
-
-O APK gerado pelo workflow usa o pipeline padrão do Tauri Android. Para publicação em loja, configure assinatura Android com secrets no GitHub e ajuste o projeto gerado em `src-tauri/gen/android`.
+- Melhorar os services de linguagem e quick fixes.
+- Fortalecer o sistema de arquivos em Android/iOS.
+- Adicionar fluxo completo de diff, commit, push e pull.
+- Expandir a integração de AI para explicar erros e aplicar correções com confirmação.
+- Refinar terminal mobile com comandos rápidos e múltiplas sessões.
 
 ## Licença
 
-MIT
+MIT. Veja [LICENSE](LICENSE).

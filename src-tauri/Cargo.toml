@@ -1,6 +1,6 @@
 [package]
 name = "lynx-studio"
-version = "0.1.0"
+version = "0.1.1"
 description = "Lynx Studio mobile-first code editor"
 authors = ["Lynx Studio"]
 edition = "2021"

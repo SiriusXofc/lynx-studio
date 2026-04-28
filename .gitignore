@@ -15,13 +15,19 @@ target
 src-tauri/target
 src-tauri/gen/android/.gradle
 src-tauri/gen/android/local.properties
+src-tauri/gen/android/keystore.properties
 src-tauri/gen/android/**/build
 src-tauri/gen/android/**/*.apk
 src-tauri/gen/android/**/*.aab
 src-tauri/gen/apple/**/build
+*.jks
+*.keystore
+android-signing/
 
 # Local browser verification artifacts
 lynx-studio-*.png
+!public/lynx-studio-icon.png
+!public/lynx-studio-logo.png
 lynx-studio-dom.html
 .chrome-cdp-profile*/
 .edge-cdp-profile*/
