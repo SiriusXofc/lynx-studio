@@ -73,5 +73,5 @@ jobs:
             Baixe o arquivo APK nos assets desta release.
           releaseDraft: false
           prerelease: false
-          releaseAssetNamePattern: Lynx-Studio-[version]-[platform]-[arch]-[bundle].[ext]
+          releaseAssetNamePattern: Lynx-Studio-[version]-[platform]-[arch]-[bundle][ext]
           uploadWorkflowArtifacts: true
