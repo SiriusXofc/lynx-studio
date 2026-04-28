@@ -1,0 +1,69 @@
+.cm-lintRange-error {
+  text-decoration: underline wavy #f14c4c;
+  text-underline-offset: 3px;
+}
+
+.cm-lintRange-warning {
+  text-decoration: underline wavy #cca700;
+  text-underline-offset: 3px;
+}
+
+.cm-lintRange-info {
+  text-decoration: underline wavy #59a4f9;
+  text-underline-offset: 3px;
+}
+
+.cm-lintRange-hint {
+  text-decoration: underline dotted rgba(238, 238, 238, 0.4);
+  text-underline-offset: 3px;
+}
+
+.cm-tooltip-lint {
+  max-width: 280px;
+  padding: 6px 10px;
+  border: 1px solid #454545;
+  border-radius: 4px;
+  background-color: #252526;
+  color: #cccccc;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.cm-tooltip-lint .cm-diagnostic {
+  padding: 2px 0;
+}
+
+.cm-tooltip-lint .cm-diagnosticText {
+  color: #cccccc;
+}
+
+.cm-tooltip-lint .cm-diagnosticSource {
+  color: #888888;
+}
+
+.cm-lint-marker-error::before {
+  color: #f14c4c;
+  content: "●";
+  font-size: 10px;
+}
+
+.cm-lint-marker-warning::before {
+  color: #cca700;
+  content: "●";
+  font-size: 10px;
+}
+
+.cm-lint-marker-info::before {
+  color: #59a4f9;
+  content: "●";
+  font-size: 10px;
+}
+
+.cm-lint-marker-hint::before {
+  color: rgba(238, 238, 238, 0.7);
+  content: "●";
+  font-size: 10px;
+}

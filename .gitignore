@@ -1,0 +1,41 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+target
+src-tauri/target
+src-tauri/gen/android/.gradle
+src-tauri/gen/android/local.properties
+src-tauri/gen/android/**/build
+src-tauri/gen/android/**/*.apk
+src-tauri/gen/android/**/*.aab
+src-tauri/gen/apple/**/build
+
+# Local browser verification artifacts
+lynx-studio-*.png
+lynx-studio-dom.html
+.chrome-cdp-profile*/
+.edge-cdp-profile*/
+public.zip
+.lynx-vite*.log
+vite*.log
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

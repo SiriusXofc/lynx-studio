@@ -1,0 +1,26 @@
+{
+  "identifier": "default",
+  "description": "Default permissions for Lynx Studio desktop and mobile windows.",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "os:default",
+    "store:default",
+    "fs:default",
+    "fs:allow-read-dir",
+    "fs:allow-read-text-file",
+    "fs:allow-write-text-file",
+    "fs:allow-mkdir",
+    "fs:allow-remove",
+    "fs:allow-rename",
+    {
+      "identifier": "fs:scope",
+      "allow": [
+        { "path": "$HOME/**" },
+        { "path": "$DOCUMENT/**" },
+        { "path": "$DOWNLOAD/**" },
+        { "path": "$APPDATA/**" }
+      ]
+    }
+  ]
+}
