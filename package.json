@@ -13,7 +13,7 @@
     "tauri:build": "tauri build",
     "tauri:android": "tauri android dev",
     "tauri:android:init": "tauri android init",
-    "tauri:android:build": "tauri android build -- --apk",
+    "tauri:android:build": "tauri android build --apk",
     "tauri:ios": "tauri ios dev",
     "release:tag": "node ./scripts/create-release-tag.mjs"
   },
