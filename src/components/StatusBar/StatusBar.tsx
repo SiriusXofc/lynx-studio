@@ -37,7 +37,7 @@ export function StatusBar() {
   const warningCount = diagnostics.filter((diagnostic) => diagnostic.severity === 'warning').length;
 
   return (
-    <div className="flex h-7 shrink-0 items-center justify-between gap-2 bg-codex-accent px-2 font-sans text-[10px] text-white">
+    <div className="lynx-status-bar flex min-h-7 shrink-0 items-center justify-between gap-2 bg-codex-accent px-2 font-sans text-[10px] text-white">
       <span className="flex min-w-0 items-center gap-1">
         <GitBranch size={12} className="shrink-0" />
         <span className="max-w-[58px] truncate">{branch}</span>

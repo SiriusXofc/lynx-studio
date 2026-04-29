@@ -7,9 +7,9 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Release tag, for example v0.1.1'
+        description: 'Release tag, for example v0.1.2'
         required: true
-        default: 'v0.1.1'
+        default: 'v0.1.2'
 
 permissions:
   contents: write
@@ -60,6 +60,9 @@ jobs:
       - name: Apply Android identity
         run: node scripts/patch-android-identity.mjs
 
+      - name: Apply Android runtime patches
+        run: node scripts/patch-android-runtime.mjs
+
       - name: Prepare Android signing
         env:
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
@@ -83,18 +86,30 @@ jobs:
       - name: Build Android APK
         run: npm run tauri:android:build
 
+      - name: Build Android AAB
+        run: npm run tauri:android:build:aab
+
       - name: Collect APK assets
         run: |
           mkdir -p release-assets
           APK_PATH="$(find src-tauri/gen/android -type f -name "*release*.apk" | sort | head -n 1)"
+          AAB_PATH="$(find src-tauri/gen/android -type f -name "*release*.aab" | sort | head -n 1)"
           if [ -z "$APK_PATH" ]; then
             APK_PATH="$(find src-tauri/gen/android -type f -name "*.apk" | sort | head -n 1)"
           fi
-          if [ -z "$APK_PATH" ]; then
-            echo "No APK files were generated."
+          if [ -z "$AAB_PATH" ]; then
+            AAB_PATH="$(find src-tauri/gen/android -type f -name "*.aab" | sort | head -n 1)"
+          fi
+          if [ -z "$APK_PATH" ] && [ -z "$AAB_PATH" ]; then
+            echo "No Android release assets were generated."
             exit 1
           fi
-          cp "$APK_PATH" "release-assets/Lynx-Studio-${RELEASE_TAG}.apk"
+          if [ -n "$APK_PATH" ]; then
+            cp "$APK_PATH" "release-assets/Lynx-Studio-${RELEASE_TAG}.apk"
+          fi
+          if [ -n "$AAB_PATH" ]; then
+            cp "$AAB_PATH" "release-assets/Lynx-Studio-${RELEASE_TAG}.aab"
+          fi
           ls -lah release-assets
 
       - name: Upload workflow artifact
@@ -108,13 +123,14 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cat > release-notes.md <<'EOF'
-          APK Android assinado e pronto para instalar.
+          APK Android assinado e AAB para loja.
 
           Esta release inclui:
-          - nome publico Lynx Studio no Android;
-          - icones oficiais do app no launcher e no bundle Tauri;
-          - build mobile gerado pelo pipeline Tauri;
-          - artefato APK com nome legivel nos assets.
+          - layout Android em tela cheia, sem frame interno;
+          - status bar fake removida no dispositivo;
+          - safe area e teclado virtual tratados no layout;
+          - file picker nativo para abrir pastas;
+          - APK instalavel e AAB assinado nos assets.
           EOF
 
           if ! gh release view "$RELEASE_TAG" >/dev/null 2>&1; then

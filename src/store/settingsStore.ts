@@ -51,6 +51,8 @@ export const defaultSettings: AppSettings = {
   },
 };
 
+const SETTINGS_VERSION = 2;
+
 interface SettingsStore {
   settings: AppSettings;
   hydrate: () => Promise<void>;
@@ -59,7 +61,10 @@ interface SettingsStore {
 }
 
 async function persistSettings(settings: AppSettings) {
-  localStorage.setItem('lynx-studio-settings', JSON.stringify(settings));
+  localStorage.setItem('lynx-studio-settings', JSON.stringify({
+    version: SETTINGS_VERSION,
+    settings,
+  }));
 
   try {
     const { load } = await import('@tauri-apps/plugin-store');
@@ -85,6 +90,16 @@ function normalizeSettings(settings: Partial<AppSettings>): AppSettings {
   };
 }
 
+function readPersistedSettings(value: string): Partial<AppSettings> {
+  const parsed = JSON.parse(value) as Partial<AppSettings> | { version?: number; settings?: Partial<AppSettings> };
+
+  if ('settings' in parsed && parsed.settings) {
+    return parsed.settings;
+  }
+
+  return parsed as Partial<AppSettings>;
+}
+
 export const useSettingsStore = create<SettingsStore>((set, get) => ({
   settings: defaultSettings,
 
@@ -92,7 +107,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
     const local = localStorage.getItem('lynx-studio-settings');
 
     if (local) {
-      set({ settings: normalizeSettings(JSON.parse(local) as Partial<AppSettings>) });
+      set({ settings: normalizeSettings(readPersistedSettings(local)) });
     }
 
     try {

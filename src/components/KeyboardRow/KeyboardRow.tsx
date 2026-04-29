@@ -87,12 +87,12 @@ export function KeyboardRow() {
   };
 
   return (
-    <div className="keyboard-row flex h-12 shrink-0 gap-[3px] overflow-x-auto border-t border-codex-border bg-[#1a1a1a] px-1 py-1.5">
+    <div className="keyboard-row flex min-h-12 shrink-0 gap-[3px] overflow-x-auto border-t border-codex-border bg-[#1a1a1a] px-1 py-1.5">
       {symbols.map((symbol) => (
         <button
           key={symbol}
           type="button"
-          className="grid h-8 min-w-8 shrink-0 place-items-center rounded-[4px] border border-[#444] bg-[#2d2d2d] px-2 font-mono text-[12px] text-[#cccccc] transition-transform active:scale-95 active:bg-[#444]"
+          className="grid h-10 min-w-10 shrink-0 place-items-center rounded-[4px] border border-[#444] bg-[#2d2d2d] px-2 font-mono text-[12px] text-[#cccccc] transition-transform active:scale-95 active:bg-[#444]"
           onClick={() => handleSymbol(symbol)}
           title={symbol === 'AI' ? 'Autocomplete com AI' : `Inserir ${symbol}`}
         >

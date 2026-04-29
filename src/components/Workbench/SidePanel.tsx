@@ -22,7 +22,7 @@ export function SidePanel() {
     <>
       <aside
         className={clsx(
-          'absolute inset-y-0 left-11 z-50 flex w-[248px] max-w-[calc(100%-44px)] flex-col border-r border-codex-border bg-codex-panel shadow-drawer transition-[transform,box-shadow] duration-200',
+          'absolute inset-y-0 left-[var(--activity-bar-width)] z-50 flex w-[248px] max-w-[calc(100%-var(--activity-bar-width))] flex-col border-r border-codex-border bg-codex-panel shadow-drawer transition-[transform,box-shadow] duration-200',
           isOpen ? 'translate-x-0' : '-translate-x-[248px]',
         )}
       >
@@ -52,7 +52,7 @@ export function SidePanel() {
         <button
           type="button"
           aria-label="Fechar overlay do painel"
-          className="absolute inset-y-0 left-[292px] right-0 z-40 bg-black/25 transition-opacity duration-200"
+          className="absolute inset-y-0 left-[calc(var(--activity-bar-width)+248px)] right-0 z-40 bg-black/25 transition-opacity duration-200"
           onClick={() => toggleFileTree(false)}
         />
       )}

@@ -1,4 +1,6 @@
+import { useCallback } from 'react';
 import { join } from '@tauri-apps/api/path';
+import { open } from '@tauri-apps/plugin-dialog';
 import {
   mkdir,
   readDir,
@@ -35,34 +37,58 @@ async function entryToNode(parent: string, entry: DirEntry): Promise<FileNode> {
 }
 
 export function useFileSystem() {
-  const openFolder = async (path: string) => {
-    try {
-      const entries = await readDir(path);
-      return Promise.all(entries.map((entry) => entryToNode(path, entry)));
-    } catch {
-      return sampleTree;
+  const openFolder = useCallback(async (path: string) => {
+    const entries = await readDir(path);
+    return Promise.all(entries.map((entry) => entryToNode(path, entry)));
+  }, []);
+
+  const openFolderPicker = useCallback(async () => {
+    const selected = await open({
+      directory: true,
+      multiple: false,
+      title: 'Abrir pasta no Lynx Studio',
+    });
+
+    if (typeof selected !== 'string') {
+      return null;
     }
-  };
 
-  const readFile = async (path: string) => {
+    return {
+      root: selected,
+      tree: await openFolder(selected),
+    };
+  }, [openFolder]);
+
+  const openSampleProject = useCallback(() => sampleTree, []);
+
+  const readFile = useCallback(async (path: string) => {
     return readTextFile(path);
-  };
+  }, []);
 
-  const saveFile = async (path: string, content: string) => {
+  const saveFile = useCallback(async (path: string, content: string) => {
     await writeTextFile(path, content);
-  };
+  }, []);
 
-  const createFolder = async (path: string) => {
+  const createFolder = useCallback(async (path: string) => {
     await mkdir(path, { recursive: true });
-  };
+  }, []);
 
-  const removePath = async (path: string) => {
+  const removePath = useCallback(async (path: string) => {
     await remove(path, { recursive: true });
-  };
+  }, []);
 
-  const renamePath = async (oldPath: string, newPath: string) => {
+  const renamePath = useCallback(async (oldPath: string, newPath: string) => {
     await rename(oldPath, newPath);
-  };
+  }, []);
 
-  return { openFolder, readFile, saveFile, createFolder, removePath, renamePath };
+  return {
+    openFolder,
+    openFolderPicker,
+    openSampleProject,
+    readFile,
+    saveFile,
+    createFolder,
+    removePath,
+    renamePath,
+  };
 }

@@ -1,3 +1,4 @@
+import type { PointerEvent } from 'react';
 import { useRef } from 'react';
 
 interface GestureActions {
@@ -16,14 +17,19 @@ export function useGestures(actions: GestureActions) {
   const startRef = useRef<GestureStart | null>(null);
 
   return {
-    onPointerDown: (event: React.PointerEvent) => {
+    onPointerDown: (event: PointerEvent) => {
+      if (event.target instanceof Element && event.target.closest('.cm-scroller')) {
+        startRef.current = null;
+        return;
+      }
+
       startRef.current = {
         x: event.clientX,
         y: event.clientY,
         edge: event.clientX <= 24,
       };
     },
-    onPointerUp: (event: React.PointerEvent) => {
+    onPointerUp: (event: PointerEvent) => {
       const start = startRef.current;
       startRef.current = null;
 

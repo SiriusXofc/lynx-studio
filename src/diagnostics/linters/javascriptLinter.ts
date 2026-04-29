@@ -3,12 +3,13 @@ import { getTypeScriptDiagnostics } from '../../services/language/languageServic
 
 export async function lintJavaScript(code: string, language = 'TypeScript'): Promise<LynxDiagnostic[]> {
   const diagnostics = await getTypeScriptDiagnostics(code, language);
+  const isJSXLike = /jsx|tsx|react/i.test(language);
   const languageServiceErrorRanges = diagnostics
     .filter((diagnostic) => diagnostic.severity === 'error')
     .map((diagnostic) => ({ from: diagnostic.from, to: diagnostic.to }));
 
   diagnostics.push(
-    ...lintJavaScriptPatterns(code).filter((diagnostic) =>
+    ...lintJavaScriptPatterns(code, isJSXLike).filter((diagnostic) =>
       !languageServiceErrorRanges.some((range) =>
         diagnostic.severity === 'error'
         && range.from <= diagnostic.to
@@ -18,7 +19,7 @@ export async function lintJavaScript(code: string, language = 'TypeScript'): Pro
   return diagnostics;
 }
 
-function lintJavaScriptPatterns(code: string): LynxDiagnostic[] {
+function lintJavaScriptPatterns(code: string, isJSXLike: boolean): LynxDiagnostic[] {
   const diagnostics: LynxDiagnostic[] = [];
   const lines = code.split('\n');
   let offset = 0;
@@ -39,24 +40,7 @@ function lintJavaScriptPatterns(code: string): LynxDiagnostic[] {
     offset += line.length + 1;
   });
 
-  const awaitRegex = /^(?!.*\basync\b).*\bawait\b/gm;
   let match: RegExpExecArray | null;
-
-  while ((match = awaitRegex.exec(code)) !== null) {
-    const before = code.slice(0, match.index);
-    const asyncCount = (before.match(/\basync\s+(function|\(|[a-z])/g) ?? []).length;
-    const closingCount = (before.match(/^}/gm) ?? []).length;
-
-    if (asyncCount <= closingCount) {
-      diagnostics.push({
-        from: match.index,
-        to: match.index + match[0].length,
-        severity: 'error',
-        message: "'await' usado fora de uma função 'async' — adicione 'async' na função que contém este código",
-        source: 'JavaScript',
-      });
-    }
-  }
 
   const assignInIf = /\bif\s*\(\s*[^=!<>]+=[^=]/g;
 
@@ -108,13 +92,15 @@ function lintJavaScriptPatterns(code: string): LynxDiagnostic[] {
     }
   }
 
-  diagnostics.push(
-    ...checkUnmatchedBrackets(code).filter((bracketDiagnostic) =>
-      !diagnostics.some((diagnostic) =>
-        diagnostic.severity === 'error'
-        && bracketDiagnostic.from >= diagnostic.from
-        && bracketDiagnostic.to <= diagnostic.to)),
-  );
+  if (!isJSXLike) {
+    diagnostics.push(
+      ...checkUnmatchedBrackets(code).filter((bracketDiagnostic) =>
+        !diagnostics.some((diagnostic) =>
+          diagnostic.severity === 'error'
+          && bracketDiagnostic.from >= diagnostic.from
+          && bracketDiagnostic.to <= diagnostic.to)),
+    );
+  }
 
   return diagnostics;
 }

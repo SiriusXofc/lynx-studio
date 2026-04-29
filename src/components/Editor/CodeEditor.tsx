@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useRef } from 'react';
-import { EditorState } from '@codemirror/state';
+import { Compartment, EditorState } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 import type { OpenFile } from '../../types';
 import { useEditorStore } from '../../store/editorStore';
 import { useSettingsStore } from '../../store/settingsStore';
 import { useFileStore } from '../../store/fileStore';
+import { useFileSystem } from '../../hooks/useFileSystem';
 import { useAI } from '../AI/useAI';
 import { EditorEmptyState } from './EditorEmptyState';
-import { createEditorExtensions } from './extensions';
+import { createEditorExtensions, ghostTextExtension } from './extensions';
 import { getLanguageExtension } from './languages';
 
 interface CodeEditorProps {
@@ -19,6 +20,7 @@ export function CodeEditor({ file }: CodeEditorProps) {
   const saveTimerRef = useRef<number | null>(null);
   const aiTimerRef = useRef<number | null>(null);
   const viewRef = useRef<EditorView | null>(null);
+  const ghostTextCompartmentRef = useRef(new Compartment());
   const initialContentRef = useRef('');
   const setContent = useEditorStore((state) => state.setContent);
   const markSaved = useEditorStore((state) => state.markSaved);
@@ -34,6 +36,7 @@ export function CodeEditor({ file }: CodeEditorProps) {
   const fileLanguage = file?.language ?? 'Plain Text';
   const fileContent = file?.content ?? '';
   const diagnosticsSettings = settings.diagnostics;
+  const { saveFile } = useFileSystem();
 
   const language = useMemo(() => getLanguageExtension(filePath), [filePath]);
 
@@ -46,6 +49,18 @@ export function CodeEditor({ file }: CodeEditorProps) {
     root.style.setProperty('--editor-font-size', `${settings.fontSize}px`);
     root.style.setProperty('--editor-font-family', settings.fontFamily);
   }, [settings.fontFamily, settings.fontSize]);
+
+  useEffect(() => {
+    const view = viewRef.current;
+
+    if (!view) {
+      return;
+    }
+
+    view.dispatch({
+      effects: ghostTextCompartmentRef.current.reconfigure(ghostTextExtension(aiGhostText)),
+    });
+  }, [aiGhostText]);
 
   useEffect(() => {
     const host = hostRef.current;
@@ -74,6 +89,17 @@ export function CodeEditor({ file }: CodeEditorProps) {
       return true;
     };
 
+    const persistContent = async (content: string) => {
+      const isVirtualFile = filePath.startsWith('/workspace/') || filePath.startsWith('/untitled-');
+
+      if (!isVirtualFile) {
+        await saveFile(filePath, content);
+      }
+
+      markSaved(fileId, content);
+      markModified(filePath, false);
+    };
+
     const updateListener = EditorView.updateListener.of((update) => {
       if (update.selectionSet) {
         const head = update.state.selection.main.head;
@@ -99,8 +125,9 @@ export function CodeEditor({ file }: CodeEditorProps) {
 
       if (settings.autoSave) {
         saveTimerRef.current = window.setTimeout(() => {
-          markSaved(fileId, content);
-          markModified(filePath, false);
+          void persistContent(content).catch((error) => {
+            console.error('Falha ao salvar arquivo.', error);
+          });
         }, settings.autoSaveDelay);
       }
 
@@ -129,10 +156,11 @@ export function CodeEditor({ file }: CodeEditorProps) {
         theme: settings.theme,
         tabSize: settings.tabSize,
         wordWrap: settings.wordWrap,
-        ghostText: aiGhostText,
+        ghostText: useEditorStore.getState().aiGhostText,
         onAcceptGhost: acceptGhost,
         onUpdate: updateListener,
         diagnostics: diagnosticsSettings,
+        ghostTextCompartment: ghostTextCompartmentRef.current,
       }),
     });
 
@@ -155,7 +183,6 @@ export function CodeEditor({ file }: CodeEditorProps) {
       setEditorView(null);
     };
   }, [
-    aiGhostText,
     fileId,
     fileLanguage,
     filePath,
@@ -163,6 +190,7 @@ export function CodeEditor({ file }: CodeEditorProps) {
     language,
     markModified,
     markSaved,
+    saveFile,
     setAIGhostText,
     setContent,
     setCursor,

@@ -19,6 +19,7 @@ export const mobileEditorTheme = EditorView.theme({
     minHeight: '100%',
     padding: '10px 0',
     caretColor: '#007acc',
+    WebkitUserModify: 'read-write-plaintext-only',
   },
   '.cm-line': {
     padding: '0 12px 0 6px',

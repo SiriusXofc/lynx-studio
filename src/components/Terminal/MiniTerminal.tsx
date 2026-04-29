@@ -4,12 +4,14 @@ import { X } from 'lucide-react';
 import { Terminal } from '@xterm/xterm';
 import '@xterm/xterm/css/xterm.css';
 import { useEditorStore } from '../../store/editorStore';
+import { usePlatform } from '../../hooks/usePlatform';
 
 export function MiniTerminal() {
   const hostRef = useRef<HTMLDivElement | null>(null);
   const terminalRef = useRef<Terminal | null>(null);
   const isOpen = useEditorStore((state) => state.isTerminalOpen);
   const toggleTerminal = useEditorStore((state) => state.toggleTerminal);
+  const { isMobile } = usePlatform();
 
   useEffect(() => {
     const host = hostRef.current;
@@ -20,7 +22,7 @@ export function MiniTerminal() {
 
     const terminal = new Terminal({
       cursorBlink: true,
-      rows: 8,
+      rows: isMobile ? 5 : 8,
       fontSize: 11,
       fontFamily: 'JetBrains Mono, Fira Code, Consolas, monospace',
       theme: {
@@ -47,7 +49,11 @@ export function MiniTerminal() {
       terminal.dispose();
       terminalRef.current = null;
     };
-  }, []);
+  }, [isMobile]);
+
+  if (isMobile) {
+    return null;
+  }
 
   return (
     <section

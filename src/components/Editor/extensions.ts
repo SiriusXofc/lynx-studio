@@ -1,5 +1,5 @@
 import type { Extension } from '@codemirror/state';
-import { EditorState, Prec } from '@codemirror/state';
+import { Compartment, EditorState, Prec } from '@codemirror/state';
 import {
   defaultKeymap,
   history,
@@ -30,8 +30,6 @@ import {
   highlightActiveLine,
   highlightActiveLineGutter,
   highlightSpecialChars,
-  rectangularSelection,
-  crosshairCursor,
   ViewPlugin,
   WidgetType,
 } from '@codemirror/view';
@@ -73,7 +71,7 @@ function ghostDecorations(view: EditorView, text: string) {
   ]);
 }
 
-function ghostTextExtension(text: string): Extension {
+export function ghostTextExtension(text: string): Extension {
   return ViewPlugin.fromClass(
     class {
       decorations: DecorationSet;
@@ -105,6 +103,7 @@ interface CreateExtensionsOptions {
   onAcceptGhost: () => boolean;
   onUpdate: Extension;
   diagnostics: DiagnosticsSettings;
+  ghostTextCompartment?: Compartment;
 }
 
 function diagnosticsLanguageEnabled(languageLabel: string, enabledLanguages: string[]) {
@@ -124,7 +123,14 @@ function diagnosticsExtension(options: CreateExtensionsOptions): Extension {
       }
 
       const code = view.state.doc.toString();
-      const diagnostics = await getDiagnosticsForLanguage(code, options.languageLabel);
+      let diagnostics;
+
+      try {
+        diagnostics = await getDiagnosticsForLanguage(code, options.languageLabel);
+      } catch {
+        queueMicrotask(() => useEditorStore.getState().setDiagnostics(options.fileId, []));
+        return [];
+      }
 
       if (view.state.doc.toString() !== code) {
         return [];
@@ -158,6 +164,11 @@ export function createEditorExtensions(options: CreateExtensionsOptions): Extens
     mobileEditorTheme,
     getEditorTheme(options.theme),
     options.language,
+    EditorView.contentAttributes.of({
+      autocorrect: 'off',
+      autocapitalize: 'none',
+      spellcheck: 'false',
+    }),
     lineNumbers(),
     highlightActiveLineGutter(),
     highlightSpecialChars(),
@@ -171,14 +182,12 @@ export function createEditorExtensions(options: CreateExtensionsOptions): Extens
     autocompletion(),
     options.diagnostics.showGutter ? lintGutter() : [],
     diagnosticsExtension(options),
-    rectangularSelection(),
-    crosshairCursor(),
     highlightActiveLine(),
     highlightSelectionMatches(),
     indentUnit.of(tab),
     EditorState.tabSize.of(options.tabSize),
     options.wordWrap ? EditorView.lineWrapping : [],
-    ghostTextExtension(options.ghostText),
+    (options.ghostTextCompartment ?? new Compartment()).of(ghostTextExtension(options.ghostText)),
     Prec.highest(
       keymap.of([
         {

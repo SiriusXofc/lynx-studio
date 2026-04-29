@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { FilePlus, SaveAll, X } from 'lucide-react';
 import type { FileNode } from '../../types';
 import { useEditorStore } from '../../store/editorStore';
 import { useFileStore } from '../../store/fileStore';
+import { useFileSystem } from '../../hooks/useFileSystem';
 import { FileTreeItem } from '../FileTree/FileTreeItem';
 import { useFileTree } from '../FileTree/useFileTree';
 import { PanelSection } from './PanelSection';
@@ -9,6 +11,7 @@ import { PanelSection } from './PanelSection';
 export function ExplorerView() {
   const tree = useFileStore((state) => state.tree);
   const expandedPaths = useFileStore((state) => state.expandedPaths);
+  const setTree = useFileStore((state) => state.setTree);
   const toggleFolder = useFileStore((state) => state.toggleFolder);
   const openFiles = useEditorStore((state) => state.openFiles);
   const currentFileId = useEditorStore((state) => state.currentFileId);
@@ -17,11 +20,52 @@ export function ExplorerView() {
   const closeTab = useEditorStore((state) => state.closeTab);
   const createUntitled = useEditorStore((state) => state.createUntitled);
   const markSaved = useEditorStore((state) => state.markSaved);
+  const { openFolderPicker, readFile, saveFile } = useFileSystem();
   const { contextMenu, setContextMenu, startLongPress, cancelLongPress } = useFileTree();
   const dirtyCount = openFiles.filter((file) => file.dirty).length;
+  const [error, setError] = useState('');
 
   const saveAll = () => {
-    openFiles.forEach((file) => markSaved(file.id));
+    setError('');
+    openFiles.forEach((file) => {
+      const isVirtualFile = file.path.startsWith('/workspace/') || file.path.startsWith('/untitled-');
+
+      if (isVirtualFile) {
+        markSaved(file.id);
+        return;
+      }
+
+      void saveFile(file.path, file.content)
+        .then(() => markSaved(file.id, file.content))
+        .catch(() => setError(`Não foi possível salvar ${file.name}. Verifique a permissão da pasta.`));
+    });
+  };
+
+  const openProjectFolder = () => {
+    setError('');
+    void openFolderPicker()
+      .then((result) => {
+        if (!result) {
+          return;
+        }
+
+        setTree(result.tree, result.root);
+      })
+      .catch(() => setError('Não foi possível abrir a pasta. No Android, escolha uma pasta permitida pelo sistema.'));
+  };
+
+  const openFile = (path: string) => {
+    setError('');
+    void readFile(path)
+      .then((content) => openTab(path, content))
+      .catch(() => {
+        if (path.startsWith('/workspace/')) {
+          openTab(path);
+          return;
+        }
+
+        setError('Não foi possível ler este arquivo. Verifique as permissões de acesso.');
+      });
   };
 
   return (
@@ -73,6 +117,20 @@ export function ExplorerView() {
       </PanelSection>
 
       <PanelSection title="Lynx Mobile" count={tree.length}>
+        <div className="px-2 pb-2">
+          <button
+            type="button"
+            className="flex h-8 w-full items-center justify-center gap-1 rounded-[4px] border border-codex-border font-sans text-[11px] text-codex-text active:bg-codex-hover"
+            onClick={openProjectFolder}
+          >
+            Abrir pasta...
+          </button>
+          {error && (
+            <div className="mt-2 rounded-[4px] border border-red-500/30 bg-red-500/10 px-2 py-1.5 font-sans text-[10px] leading-snug text-red-200">
+              {error}
+            </div>
+          )}
+        </div>
         {tree.map((node: FileNode) => (
           <FileTreeItem
             key={node.id}
@@ -81,7 +139,7 @@ export function ExplorerView() {
             activePath={currentFileId}
             expandedPaths={expandedPaths}
             onToggleFolder={toggleFolder}
-            onOpenFile={openTab}
+            onOpenFile={openFile}
             onLongPressStart={startLongPress}
             onLongPressEnd={cancelLongPress}
           />

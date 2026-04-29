@@ -41,7 +41,15 @@ export const useFileStore = create<FileStore>((set, get) => ({
   tree: sampleTree,
   expandedPaths: ['/workspace', '/workspace/src'],
 
-  setTree: (tree, root) => set({ tree, projectRoot: root ?? get().projectRoot }),
+  setTree: (tree, root) =>
+    set((state) => {
+      const projectRoot = root ?? state.projectRoot;
+      return {
+        tree,
+        projectRoot,
+        expandedPaths: projectRoot ? [projectRoot, ...tree.filter((node) => node.type === 'directory').map((node) => node.path)] : state.expandedPaths,
+      };
+    }),
 
   toggleFolder: (path) =>
     set((state) => ({

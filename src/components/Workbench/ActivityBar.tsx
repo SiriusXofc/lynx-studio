@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import type { WorkbenchView } from '../../types';
 import { useEditorStore } from '../../store/editorStore';
+import { usePlatform } from '../../hooks/usePlatform';
 
 const primaryViews: Array<{ id: WorkbenchView; label: string; icon: LucideIcon }> = [
   { id: 'explorer', label: 'Explorador', icon: Files },
@@ -28,9 +29,10 @@ export function ActivityBar() {
   const toggleSettings = useEditorStore((state) => state.toggleSettings);
   const toggleTerminal = useEditorStore((state) => state.toggleTerminal);
   const dirtyCount = openFiles.filter((file) => file.dirty).length;
+  const { isMobile } = usePlatform();
 
   return (
-    <nav className="absolute inset-y-0 left-0 z-[60] flex w-11 flex-col items-center border-r border-codex-border bg-[#181818] py-1">
+    <nav className="absolute inset-y-0 left-0 z-[60] flex w-[var(--activity-bar-width)] flex-col items-center border-r border-codex-border bg-[#181818] py-1">
       <div className="flex flex-1 flex-col items-center gap-1">
         {primaryViews.map((view) => {
           const Icon = view.icon;
@@ -43,7 +45,7 @@ export function ActivityBar() {
               aria-label={view.label}
               title={view.label}
               className={clsx(
-                'relative grid h-10 w-10 place-items-center rounded-[4px] text-codex-muted transition-colors active:bg-codex-hover',
+                'activity-button relative grid h-10 w-10 place-items-center rounded-[4px] text-codex-muted transition-colors active:bg-codex-hover',
                 active && 'text-white',
               )}
               onClick={() => toggleWorkbenchView(view.id)}
@@ -65,7 +67,7 @@ export function ActivityBar() {
           type="button"
           aria-label="Lynx AI"
           title="Lynx AI"
-          className="grid h-10 w-10 place-items-center rounded-[4px] text-codex-muted active:bg-codex-hover active:text-white"
+          className="activity-button grid h-10 w-10 place-items-center rounded-[4px] text-codex-muted active:bg-codex-hover active:text-white"
           onClick={() => toggleAISidebar()}
         >
           <Bot size={18} />
@@ -73,9 +75,14 @@ export function ActivityBar() {
         <button
           type="button"
           aria-label="Terminal"
-          title="Terminal"
-          className="grid h-10 w-10 place-items-center rounded-[4px] text-codex-muted active:bg-codex-hover active:text-white"
-          onClick={() => toggleTerminal()}
+          title={isMobile ? 'Terminal indisponível no Android' : 'Terminal'}
+          className="activity-button grid h-10 w-10 place-items-center rounded-[4px] text-codex-muted active:bg-codex-hover active:text-white disabled:cursor-not-allowed disabled:opacity-35"
+          onClick={() => {
+            if (!isMobile) {
+              toggleTerminal();
+            }
+          }}
+          disabled={isMobile}
         >
           <TerminalSquare size={18} />
         </button>
@@ -83,7 +90,7 @@ export function ActivityBar() {
           type="button"
           aria-label="Configurações"
           title="Configurações"
-          className="grid h-10 w-10 place-items-center rounded-[4px] text-codex-muted active:bg-codex-hover active:text-white"
+          className="activity-button grid h-10 w-10 place-items-center rounded-[4px] text-codex-muted active:bg-codex-hover active:text-white"
           onClick={() => toggleSettings(true)}
         >
           <Settings size={18} />

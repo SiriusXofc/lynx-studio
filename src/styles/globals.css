@@ -1,4 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import '@fontsource/inter/latin-400.css';
+@import '@fontsource/inter/latin-500.css';
+@import '@fontsource/inter/latin-600.css';
+@import '@fontsource/jetbrains-mono/latin-400.css';
+@import '@fontsource/jetbrains-mono/latin-500.css';
+@import '@fontsource/jetbrains-mono/latin-600.css';
 @import './editor.css';
 
 @tailwind base;
@@ -11,6 +16,7 @@
   --keyboard-height: 0px;
   --app-viewport-height: 100dvh;
   --app-viewport-width: 100vw;
+  --activity-bar-width: 44px;
   --editor-font-size: 13px;
   --editor-font-family: 'JetBrains Mono';
 }
@@ -62,6 +68,13 @@ button {
     #050505;
 }
 
+.app-viewport[data-mobile="true"] {
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+  background: #050505;
+}
+
 .app-container {
   width: min(100%, 390px);
   height: min(var(--app-viewport-height, 100dvh), 844px);
@@ -69,6 +82,34 @@ button {
   min-height: 0;
   border: 1px solid #111111;
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+}
+
+.app-container[data-mobile="true"] {
+  width: 100%;
+  height: var(--app-viewport-height, 100dvh);
+  border: 0;
+  box-shadow: none;
+  --activity-bar-width: 56px;
+}
+
+.app-container[data-mobile="true"] .lynx-titlebar {
+  min-height: calc(42px + env(safe-area-inset-top));
+  padding-top: env(safe-area-inset-top);
+}
+
+.app-container[data-mobile="true"] .keyboard-row {
+  min-height: calc(48px + env(safe-area-inset-bottom));
+  padding-bottom: max(6px, env(safe-area-inset-bottom));
+}
+
+.app-container[data-mobile="true"] .lynx-status-bar {
+  min-height: calc(28px + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.app-container[data-mobile="true"] .activity-button {
+  width: 48px;
+  height: 48px;
 }
 
 @media (max-width: 430px), (max-height: 700px) {

@@ -78,10 +78,17 @@ As releases são geradas pelo GitHub Actions em `.github/workflows/release.yml`.
 - instala Node, Rust, Java e Android SDK;
 - inicializa o projeto Android do Tauri;
 - aplica o nome público `Lynx Studio`;
+- aplica ajustes do runtime Android, incluindo `targetSdk = 35` e `windowSoftInputMode="adjustResize"`;
 - assina o APK usando secrets do GitHub;
-- publica o arquivo `Lynx-Studio-vX.Y.Z.apk` nos assets da release.
+- publica `Lynx-Studio-vX.Y.Z.apk` e `Lynx-Studio-vX.Y.Z.aab` nos assets da release.
 
-Secrets necessários no GitHub:
+## Android
+
+O app Android deve ocupar a tela real do dispositivo. O phone frame de 390 x 844 px é apenas para desktop/dev. Em Android/iOS, a status bar falsa é removida e o layout usa `visualViewport`, `100dvh`, safe areas e `adjustResize` para conviver melhor com teclado virtual e navigation bar.
+
+O explorador usa `tauri-plugin-dialog` para abrir uma pasta pelo seletor nativo. O projeto de exemplo continua disponível como fallback visual, mas arquivos reais precisam de permissão concedida pelo sistema.
+
+Secrets necessários no GitHub para release Android:
 
 ```text
 ANDROID_KEY_ALIAS

@@ -76,11 +76,11 @@ function App() {
   }, [editorView]);
 
   return (
-    <div className="app-viewport">
+    <div className="app-viewport" data-mobile={isMobile}>
       <div className="app-container flex flex-col overflow-hidden bg-codex-bg text-codex-text" data-mobile={isMobile}>
-        <TopStatusBar />
+        {!isMobile && <TopStatusBar />}
 
-        <header className="flex h-[42px] shrink-0 items-center gap-1 border-b border-codex-border bg-codex-panel px-2">
+        <header className="lynx-titlebar flex h-[42px] shrink-0 items-center gap-1 border-b border-codex-border bg-codex-panel px-2">
           <button
             type="button"
             className="grid h-8 w-8 shrink-0 place-items-center rounded-[4px] text-codex-muted active:bg-codex-hover active:text-white"
@@ -121,7 +121,7 @@ function App() {
         <main className="relative min-h-0 flex-1 overflow-hidden" {...gestureHandlers}>
           <ActivityBar />
           <SidePanel />
-          <section className="relative z-0 ml-11 flex h-full min-w-0 flex-col overflow-hidden">
+          <section className="relative z-0 ml-[var(--activity-bar-width)] flex h-full min-w-0 flex-col overflow-hidden">
             <EditorHeader file={currentFile} />
             <CodeEditor file={currentFile} />
           </section>

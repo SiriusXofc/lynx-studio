@@ -6,6 +6,7 @@
     "core:default",
     "os:default",
     "store:default",
+    "dialog:default",
     "fs:default",
     "fs:allow-read-dir",
     "fs:allow-read-text-file",
@@ -16,10 +17,10 @@
     {
       "identifier": "fs:scope",
       "allow": [
-        { "path": "$HOME/**" },
         { "path": "$DOCUMENT/**" },
         { "path": "$DOWNLOAD/**" },
-        { "path": "$APPDATA/**" }
+        { "path": "$APPDATA/**" },
+        { "path": "$APPCACHE/**" }
       ]
     }
   ]

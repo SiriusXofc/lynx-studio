@@ -4,6 +4,7 @@ import type { LanguageWorkerRequest, LanguageWorkerResponse } from './types';
 interface PendingRequest {
   resolve: (diagnostics: LynxDiagnostic[]) => void;
   reject: (error: Error) => void;
+  timeoutId: number;
 }
 
 let requestId = 0;
@@ -33,6 +34,7 @@ function createLanguageWorker(createWorker: () => Worker) {
       }
 
       workerPending?.delete(event.data.id);
+      window.clearTimeout(pending.timeoutId);
 
       if (event.data.type === 'diagnostics-error') {
         pending.reject(new Error(event.data.message));
@@ -51,6 +53,7 @@ function createLanguageWorker(createWorker: () => Worker) {
       const workerPending = pendingRequests.get(worker);
 
       for (const pending of workerPending?.values() ?? []) {
+        window.clearTimeout(pending.timeoutId);
         pending.reject(error);
       }
 
@@ -95,7 +98,12 @@ function requestDiagnostics(
   }
 
   return new Promise<LynxDiagnostic[]>((resolve, reject) => {
-    workerPending.set(id, { resolve, reject });
+    const timeoutId = window.setTimeout(() => {
+      workerPending.delete(id);
+      reject(new Error('Language worker timeout'));
+    }, 15_000);
+
+    workerPending.set(id, { resolve, reject, timeoutId });
     worker.postMessage(request);
   });
 }
