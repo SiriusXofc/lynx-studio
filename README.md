@@ -2,28 +2,28 @@
 
 ![Lynx Studio](public/lynx-studio-logo.png)
 
-Lynx Studio é um editor de código mobile-first criado para aproximar a experiência do VS Code de uma tela de celular. O objetivo do projeto é permitir que você abra, navegue, edite e entenda projetos reais em Android, iOS e também no PC usando uma janela em formato de telefone para desenvolvimento rápido.
+Lynx Studio e um editor de codigo mobile-first criado para aproximar a experiencia do VS Code de uma tela de celular. O objetivo do projeto e permitir que voce abra, navegue, edite e entenda projetos reais em Android, iOS e tambem no PC usando uma janela em formato de telefone para desenvolvimento rapido.
 
-O app nasceu para resolver um problema direto: programar no celular ainda é desconfortável demais. Por isso a interface prioriza gestos, abas compactas, explorador lateral, fileira extra de símbolos, diagnósticos em tempo real e um editor leve baseado em CodeMirror 6.
+O app nasceu para resolver um problema direto: programar no celular ainda e desconfortavel demais. Por isso a interface prioriza gestos, abas compactas, explorador lateral, fileira extra de simbolos, diagnosticos em tempo real e um editor leve baseado em CodeMirror 6.
 
 ## Objetivo
 
-- Editar código real em telas pequenas sem depender de um desktop.
-- Rodar offline no dispositivo sempre que possível.
-- Reaproveitar ideias sólidas do VS Code, mas com uma experiência desenhada para touch.
+- Editar codigo real em telas pequenas sem depender de um desktop.
+- Rodar offline no dispositivo sempre que possivel.
+- Reaproveitar ideias solidas do VS Code, mas com uma experiencia desenhada para touch.
 - Testar no PC em uma janela fixa de 390 x 844 px, igual ao formato de celular.
-- Evoluir para um ambiente mobile completo com Git, terminal, AI e diagnósticos ricos.
+- Evoluir para um ambiente mobile completo com Git, terminal, AI e diagnosticos ricos.
 
 ## Recursos
 
 - Editor com CodeMirror 6, syntax highlight e line wrapping.
 - Abas de arquivos abertas, explorador lateral e busca.
-- Keyboard row com símbolos de código sempre à mão.
-- Diagnósticos em tempo real com squiggles, gutter markers e painel de Problemas.
+- Keyboard row com simbolos de codigo sempre a mao.
+- Diagnosticos em tempo real com squiggles, gutter markers e painel de Problemas.
 - Services leves inspirados no VS Code para TypeScript, JSON, CSS/SCSS e HTML.
-- Terminal integrado com xterm.js.
-- Git básico com isomorphic-git.
-- Sidebar de AI com Anthropic para sugestões e contexto do arquivo.
+- Terminal integrado com xterm.js no desktop; no Android ele fica desabilitado ate existir backend real.
+- Git basico com isomorphic-git.
+- Sidebar de AI com Anthropic para sugestoes e contexto do arquivo.
 - Build Tauri v2 para desktop, Android e iOS.
 
 ## Stack
@@ -33,7 +33,7 @@ O app nasceu para resolver um problema direto: programar no celular ainda é des
 - CodeMirror 6
 - Tailwind CSS
 - Zustand
-- `@tauri-apps/plugin-fs`, `plugin-os`, `plugin-store`
+- `@tauri-apps/plugin-fs`, `plugin-os`, `plugin-store`, `plugin-dialog`
 - `isomorphic-git`
 - `@xterm/xterm`
 - Anthropic API
@@ -62,6 +62,7 @@ Android:
 ```bash
 npm run tauri:android:init
 npm run tauri:android:build
+npm run tauri:android:build:aab
 ```
 
 ## Qualidade
@@ -73,22 +74,22 @@ npm run build
 
 ## Releases Android
 
-As releases são geradas pelo GitHub Actions em `.github/workflows/release.yml`. O pipeline:
+As releases sao geradas pelo GitHub Actions em `.github/workflows/release.yml`. O pipeline:
 
 - instala Node, Rust, Java e Android SDK;
 - inicializa o projeto Android do Tauri;
-- aplica o nome público `Lynx Studio`;
+- aplica o nome publico `Lynx Studio`;
 - aplica ajustes do runtime Android, incluindo `targetSdk = 35` e `windowSoftInputMode="adjustResize"`;
-- assina o APK usando secrets do GitHub;
+- assina os artefatos usando secrets do GitHub;
 - publica `Lynx-Studio-vX.Y.Z.apk` e `Lynx-Studio-vX.Y.Z.aab` nos assets da release.
 
 ## Android
 
-O app Android deve ocupar a tela real do dispositivo. O phone frame de 390 x 844 px é apenas para desktop/dev. Em Android/iOS, a status bar falsa é removida e o layout usa `visualViewport`, `100dvh`, safe areas e `adjustResize` para conviver melhor com teclado virtual e navigation bar.
+O app Android deve ocupar a tela real do dispositivo. O phone frame de 390 x 844 px e apenas para desktop/dev. Em Android/iOS, a status bar falsa e removida e o layout usa `visualViewport`, `100dvh`, safe areas e `adjustResize` para conviver melhor com teclado virtual e navigation bar.
 
-O explorador usa `tauri-plugin-dialog` para abrir uma pasta pelo seletor nativo. O projeto de exemplo continua disponível como fallback visual, mas arquivos reais precisam de permissão concedida pelo sistema.
+O explorador usa `tauri-plugin-dialog` para abrir uma pasta pelo seletor nativo. O projeto de exemplo continua disponivel como fallback visual, mas arquivos reais precisam de permissao concedida pelo sistema.
 
-Secrets necessários no GitHub para release Android:
+Secrets necessarios no GitHub para release Android:
 
 ```text
 ANDROID_KEY_ALIAS
@@ -110,9 +111,9 @@ npm run release:tag
 - Melhorar os services de linguagem e quick fixes.
 - Fortalecer o sistema de arquivos em Android/iOS.
 - Adicionar fluxo completo de diff, commit, push e pull.
-- Expandir a integração de AI para explicar erros e aplicar correções com confirmação.
-- Refinar terminal mobile com comandos rápidos e múltiplas sessões.
+- Expandir a integracao de AI para explicar erros e aplicar correcoes com confirmacao.
+- Refinar terminal mobile com comandos rapidos e multiplas sessoes.
 
-## Licença
+## Licenca
 
 MIT. Veja [LICENSE](LICENSE).

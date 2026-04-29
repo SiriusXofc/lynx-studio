@@ -7,16 +7,16 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Release tag, for example v0.1.2'
+        description: 'Release tag, for example v0.1.3'
         required: true
-        default: 'v0.1.2'
+        default: 'v0.1.3'
 
 permissions:
   contents: write
 
 jobs:
   android:
-    name: Android APK
+    name: Android APK/AAB
     runs-on: ubuntu-latest
     env:
       RELEASE_TAG: ${{ github.event.inputs.tag || github.ref_name }}
@@ -89,7 +89,7 @@ jobs:
       - name: Build Android AAB
         run: npm run tauri:android:build:aab
 
-      - name: Collect APK assets
+      - name: Collect Android assets
         run: |
           mkdir -p release-assets
           APK_PATH="$(find src-tauri/gen/android -type f -name "*release*.apk" | sort | head -n 1)"
@@ -116,7 +116,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: lynx-studio-android-${{ env.RELEASE_TAG }}
-          path: release-assets/*.apk
+          path: release-assets/*
 
       - name: Publish GitHub Release
         env:
@@ -139,4 +139,4 @@ jobs:
               --title "Lynx Studio $RELEASE_TAG" \
               --notes-file release-notes.md
           fi
-          gh release upload "$RELEASE_TAG" release-assets/*.apk --clobber
+          gh release upload "$RELEASE_TAG" release-assets/* --clobber
